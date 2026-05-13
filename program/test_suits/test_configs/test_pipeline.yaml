@@ -1,0 +1,22 @@
+config_files:
+  promql: "test_promql.yaml"  
+  range: "test_range.yaml"
+  server: "test_server.yaml"
+  output: "test_output.yaml"
+
+pipelines:
+  - id: "test_pipeline_1"
+    name: "Test Pipeline 1"
+    description: "Pipeline for testing with test configs."
+    promqls:
+      - "prometheus_up"
+      - "node_cpu_usage"
+      - "node_memory_usage"
+    ranges:
+      - "range_with_datetime"
+      - "range_with_timestamps"
+      - "range_backwards"
+    servers:
+      - "kind_prometheus"
+    outputs:
+      - "csv_output"

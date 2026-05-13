@@ -1,0 +1,18 @@
+ranges:
+  - id: range_with_datetime
+    type: datetime
+    step: 15s
+    start: 2024-01-01T00:00:00Z
+    end: 2024-01-02T00:00:00Z
+
+  - id: range_with_timestamps
+    type: timestamp
+    step: 15s
+    start: 1704067200  # Unix timestamp for 2024-01-01T00:00:00Z
+    end: 1704153600    # Unix timestamp for 2024-01-02T00:00:00Z
+
+  - id: range_backwards
+    type: relative
+    step: 15s
+    start: now-24h
+    end: now

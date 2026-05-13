@@ -1,0 +1,5 @@
+outputs:
+  - id: "csv_output"
+    type: "csv"
+    file_path: "output_{query_id}.csv"
+    include_labels: true

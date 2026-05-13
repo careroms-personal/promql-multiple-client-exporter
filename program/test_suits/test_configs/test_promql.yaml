@@ -1,0 +1,21 @@
+queries:
+  - id: "prometheus_up"
+    query: "up{job='prometheus'}"
+    type: instant
+    export_labels: 
+      - "instance"
+      - "job"
+
+  - id: "node_cpu_usage"
+    query: "cpu_usage_seconds_total{job='node_exporter'}"
+    type: range
+    export_labels: 
+      - "instance"
+      - "job"
+      
+  - id: "node_memory_usage"
+    query: "memory_usage_bytes{job='node_exporter'}"
+    type: range
+    export_labels: 
+      - "instance"
+      - "job"

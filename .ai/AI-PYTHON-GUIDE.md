@@ -1,6 +1,6 @@
 # pyconfplate — AI Guide
-<!-- last human review: 2026 Mar 24 -->
-<!-- last ai update: 2026 Mar 24 -->
+<!-- last human review: 2026 May 13 -->
+<!-- last ai update: 2026 May 13 -->
 
 Quick reference for AI assistants working in this codebase.
 See `vibe-code-rule.yaml` for project rules.
@@ -9,34 +9,46 @@ See `vibe-code-rule.yaml` for project rules.
 
 ## Project Purpose
 
-Boilerplate for a Python CLI program that reads a YAML config file and runs a pipeline of executors orchestrated by a Processor. Each executor has a single duty, returns a typed result, and passes it to the next executor in the chain.
+CLI tool that reads a pipeline YAML config and runs PromQL queries against multiple Prometheus servers, then exports results to configured outputs (CSV, JSON, PostgreSQL).
 
 ---
 
 ## Project Structure
 
 ```
-pyconfplate/
+promql-multiple-client-exporter/
 ├── vibe-code-rule.yaml              # AI instruction manifest — read first
 ├── pyproject.toml                   # dependencies and build config (only place for deps)
 ├── .ai/
+│   ├── AI-PRINCIPLE-GUIDE.md        # design principles
 │   └── AI-PYTHON-GUIDE.md           # this file
 └── program/
     ├── app/
     │   └── main.py                  # CLI entry point — do not add logic here
     ├── models/
-    │   ├── config_models.py         # pydantic config models (AppConfig and sub-models)
-    │   └── result_models.py         # pydantic result models passed between executors
+    │   ├── pipeline_config.py       # PipelineConfig, PipelineEntry, ConfigFiles
+    │   ├── server_config.py         # ServerConfig, ServerEntry, AuthConfig
+    │   ├── promql_config.py         # PromqlConfig, QueryEntry
+    │   ├── range_config.py          # RangeConfig, RangeEntry
+    │   └── output_config.py         # OutputConfig, OutputEntry
     ├── processor/
     │   ├── processor.py             # orchestrator: config load + executor chain
-    │   ├── base_executor.py         # abstract base class — all executors inherit this
-    │   ├── <duty>_executor.py       # one file per executor
-    │   └── ...
+    │   └── <duty>_executor.py       # one file per executor (to be added)
     ├── global_config.py             # reserved — do not add models here
     ├── config_templates/
-    │   └── config.yaml              # YAML template showing valid config structure
+    │   ├── pipeline_config.yaml     # top-level config: file refs + pipeline definitions
+    │   ├── server_config.yaml       # Prometheus server list
+    │   ├── promql_config.yaml       # PromQL query list
+    │   ├── range_config.yaml        # time range list (datetime / timestamp / relative)
+    │   └── output_config.yaml       # output target list (csv / json / postgresql)
     └── test_suits/
-        └── global_test_config.py    # shared test fixtures/constants
+        ├── global_test_config.py    # shared test fixtures/constants
+        └── test_configs/
+            ├── test_pipeline.yaml
+            ├── test_server.yaml
+            ├── test_promql.yaml
+            ├── test_range.yaml
+            └── test_output.yaml
 ```
 
 ---
@@ -48,9 +60,13 @@ pyconfplate/
 | CLI argument parsing | `program/app/main.py` |
 | Executor chain and flow | `program/processor/processor.py` |
 | Base executor contract | `program/processor/base_executor.py` |
-| Config structure (pydantic) | `program/models/config_models.py` |
-| Inter-executor result types | `program/models/result_models.py` |
-| YAML config structure | `program/config_templates/config.yaml` |
+| Pipeline config model | `program/models/pipeline_config.py` |
+| Server config model | `program/models/server_config.py` |
+| PromQL query config model | `program/models/promql_config.py` |
+| Time range config model | `program/models/range_config.py` |
+| Output config model | `program/models/output_config.py` |
+| YAML config templates | `program/config_templates/` |
+| Test YAML configs | `program/test_suits/test_configs/` |
 | Shared test fixtures | `program/test_suits/global_test_config.py` |
 | Dependencies | `pyproject.toml` |
 
