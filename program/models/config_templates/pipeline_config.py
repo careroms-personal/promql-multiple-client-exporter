@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class ConfigFiles(BaseModel):
   promql: str
@@ -11,11 +11,12 @@ class PipelineEntry(BaseModel):
   id: str
   name: str
   description: str
-  promqls: list[str]
-  ranges: Optional[list[str]] = None
-  servers: list[str]
-  outputs: list[str]
+  promqls: List[str]
+  ranges: Optional[List[str]] = None
+  servers: List[str]
+  outputs: List[str]
 
 class PipelineConfig(BaseModel):
+  pipeline_file_path: Optional[str] = None
   config_files: ConfigFiles
-  pipelines: list[PipelineEntry]
+  pipelines: List[PipelineEntry]

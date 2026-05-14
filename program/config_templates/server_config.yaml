@@ -2,12 +2,12 @@ servers:
   - id: sandbox_prometheus
     url: "http://localhost:9090"
     api: "api/v1"        # optional, default api/v1
-    timeout: 30s
+    timeout: 30
     auth:                # optional block
       type: none         # none / bearer / basic
 
   - id: sandbox_prometheus_2
     url: "http://localhost:9091"
-    timeout: 30s
+    timeout: 30
     auth:                # optional block
       type: none         # none / bearer / basic

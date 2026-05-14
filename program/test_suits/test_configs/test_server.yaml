@@ -1,6 +1,6 @@
 servers:
   - id: kind_prometheus
     url: "http://localhost:9090"
-    timeout: 30s
+    timeout: 30
     auth:
       type: none

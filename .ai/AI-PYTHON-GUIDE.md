@@ -1,6 +1,6 @@
-# pyconfplate — AI Guide
+# promql-multiple-client-exporter — AI Guide
 <!-- last human review: 2026 May 13 -->
-<!-- last ai update: 2026 May 13 -->
+<!-- last ai update: 2026 May 14 -->
 
 Quick reference for AI assistants working in this codebase.
 See `vibe-code-rule.yaml` for project rules.
@@ -26,21 +26,29 @@ promql-multiple-client-exporter/
     ├── app/
     │   └── main.py                  # CLI entry point — do not add logic here
     ├── models/
-    │   ├── pipeline_config.py       # PipelineConfig, PipelineEntry, ConfigFiles
-    │   ├── server_config.py         # ServerConfig, ServerEntry, AuthConfig
-    │   ├── promql_config.py         # PromqlConfig, QueryEntry
-    │   ├── range_config.py          # RangeConfig, RangeEntry
-    │   └── output_config.py         # OutputConfig, OutputEntry
+    │   ├── config_templates/
+    │   │   ├── pipeline_config.py         # PipelineConfig, PipelineEntry, ConfigFiles
+    │   │   ├── server_config.py           # ServerConfig, ServerEntry, AuthConfig
+    │   │   ├── promql_config.py           # PromqlConfig, QueryEntry
+    │   │   ├── range_config.py            # RangeConfig, RangeEntry
+    │   │   ├── output_config.py           # OutputConfig, OutputEntry
+    │   │   └── promql_query_export_sample.py  # PromqlQueryExportSample, PipelineEntry, OutputEntry, RangeBlock
+    │   └── executors/
+    │       ├── config_loader_models.py    # ConfigLoaderResult
+    │       └── config_parser_models.py    # PromqlCombineQuery, PromqlRanges, PromqlRangeEntry
     ├── processor/
     │   ├── processor.py             # orchestrator: config load + executor chain
-    │   └── <duty>_executor.py       # one file per executor (to be added)
+    │   └── executors/
+    │       ├── config_loader_executor.py  # loads all sub-configs from pipeline file paths
+    │       └── config_parser_executor.py  # parses/combines configs into query execution units
     ├── global_config.py             # reserved — do not add models here
     ├── config_templates/
-    │   ├── pipeline_config.yaml     # top-level config: file refs + pipeline definitions
-    │   ├── server_config.yaml       # Prometheus server list
-    │   ├── promql_config.yaml       # PromQL query list
-    │   ├── range_config.yaml        # time range list (datetime / timestamp / relative)
-    │   └── output_config.yaml       # output target list (csv / json / postgresql)
+    │   ├── pipeline_config.yaml           # top-level config: file refs + pipeline definitions
+    │   ├── server_config.yaml             # Prometheus server list
+    │   ├── promql_config.yaml             # PromQL query list
+    │   ├── range_config.yaml              # time range list (datetime / timestamp / relative)
+    │   ├── output_config.yaml             # output target list (csv / json / postgresql)
+    │   └── promql_query_export_sample.yaml  # flattened single-pipeline export sample
     └── test_suits/
         ├── global_test_config.py    # shared test fixtures/constants
         └── test_configs/
@@ -59,12 +67,16 @@ promql-multiple-client-exporter/
 |---|---|
 | CLI argument parsing | `program/app/main.py` |
 | Executor chain and flow | `program/processor/processor.py` |
-| Base executor contract | `program/processor/base_executor.py` |
-| Pipeline config model | `program/models/pipeline_config.py` |
-| Server config model | `program/models/server_config.py` |
-| PromQL query config model | `program/models/promql_config.py` |
-| Time range config model | `program/models/range_config.py` |
-| Output config model | `program/models/output_config.py` |
+| Config loader executor | `program/processor/executors/config_loader_executor.py` |
+| Config parser executor | `program/processor/executors/config_parser_executor.py` |
+| Pipeline config model | `program/models/config_templates/pipeline_config.py` |
+| Server config model | `program/models/config_templates/server_config.py` |
+| PromQL query config model | `program/models/config_templates/promql_config.py` |
+| Time range config model | `program/models/config_templates/range_config.py` |
+| Output config model | `program/models/config_templates/output_config.py` |
+| Flattened export sample model | `program/models/config_templates/promql_query_export_sample.py` |
+| Config loader result model | `program/models/executors/config_loader_models.py` |
+| Config parser result models | `program/models/executors/config_parser_models.py` |
 | YAML config templates | `program/config_templates/` |
 | Test YAML configs | `program/test_suits/test_configs/` |
 | Shared test fixtures | `program/test_suits/global_test_config.py` |
@@ -75,14 +87,14 @@ promql-multiple-client-exporter/
 ## Architecture: Processor + Executor Chain
 
 ```
-YAML Config File
+pipeline_config.yaml
       ↓
   Processor
-  ├─→ __init__: load + validate config → self.config
+  ├─→ __init__: load + validate PipelineConfig → self.config
+  ├─→ _set_pipeline_file_path(): inject resolved dir into self.config.pipeline_file_path
   └─→ execute():
-        ├─→ FirstExecutor(config).execute()            → ResultA
-        ├─→ SecondExecutor(result_a, config).execute() → ResultB
-        └─→ ThirdExecutor(result_b, config).execute()  → (side effects / final output)
+        ├─→ ConfigLoaderExecutor(config).execute()              → ConfigLoaderResult
+        └─→ ConfigParserExecutor(loader_result, config).execute() → ConfigParserResult (TBD)
 ```
 
 **Rules:**
@@ -127,140 +139,125 @@ if __name__ == "__main__":
 
 ### 2. Processor (`processor.py`)
 
-Loads config, chains executors. No business logic.
+Loads config, injects pipeline file path, chains executors. No business logic.
 
 ```python
 import yaml, sys
 from pathlib import Path
 from pydantic import ValidationError
-from models.config_models import AppConfig
-from processor.first_executor import FirstExecutor
-from processor.second_executor import SecondExecutor
+from models.config_templates.pipeline_config import PipelineConfig
+from .executors.config_loader_executor import ConfigLoaderExecutor
 
 class Processor:
   def __init__(self, config_path: str):
-    self.config = self._load_and_validate_config(config_path)
+    self.config = self._load_and_validate_config(config_path=config_path)
+    self._set_pipeline_file_path(config_path=config_path)
 
-  def _load_and_validate_config(self, config_path: str) -> AppConfig:
+  def _load_and_validate_config(self, config_path: str):
     if not Path(config_path).exists():
       print(f"❌ Config file not found: {config_path}")
       sys.exit(1)
     try:
       with open(config_path, 'r') as f:
         yaml_data = yaml.safe_load(f)
-      return AppConfig(**yaml_data)
+      return PipelineConfig(**yaml_data)
     except ValidationError as e:
       print(f"❌ Invalid config file:")
       for error in e.errors():
         print(f"   - {error['loc']}: {error['msg']}")
       sys.exit(1)
 
+  def _set_pipeline_file_path(self, config_path: str):
+    self.config.pipeline_file_path = str(Path(config_path).resolve().parent)
+
   def execute(self):
-    self.first_executor = FirstExecutor(self.config)
-    self.first_result = self.first_executor.execute()
-
-    self.second_executor = SecondExecutor(self.first_result, self.config)
-    self.second_result = self.second_executor.execute()
+    self.config_loader = ConfigLoaderExecutor(self.config)
+    self.config_loader_result = self.config_loader.execute()
 ```
 
 ---
 
-### 3. Base Executor (`base_executor.py`)
+### 3. Executor (`<duty>_executor.py`)
 
-All executors must inherit from `BaseExecutor`. It enforces the `execute()` contract.
-
-```python
-# program/processor/base_executor.py
-from abc import ABC, abstractmethod
-from typing import Any
-
-class BaseExecutor(ABC):
-  @abstractmethod
-  def execute(self) -> Any:
-    """Execute this executor's duty and return a typed result."""
-    pass
-```
-
----
-
-### 4. Executor (`<duty>_executor.py`)
-
-One duty per executor. Inherits `BaseExecutor`. Receives previous result + full config. Returns typed model.
+One duty per executor. Receives previous result + full config. Returns typed model.
 
 ```python
-from processor.base_executor import BaseExecutor
-from models.config_models import AppConfig
-from models.result_models import FirstResult, SecondResult
+from models.config_templates.pipeline_config import PipelineConfig
+from models.executors.config_loader_models import ConfigLoaderResult
+from models.executors.config_parser_models import ConfigParserResult
 
-class SecondExecutor(BaseExecutor):
-  def __init__(self, first_result: FirstResult, config: AppConfig):
-    self.first_result = first_result
-    # extract only the config section this executor needs
-    self.task_config = config.second_task_config
+class ConfigParserExecutor:
+  def __init__(self, loader_result: ConfigLoaderResult, config: PipelineConfig):
+    self.loader_result = loader_result
+    self.config = config
 
-  def execute(self) -> SecondResult:
-    data = self._process(self.first_result)
-    return SecondResult(...)
-
-  def _process(self, input: FirstResult) -> ...:
+  def execute(self) -> ConfigParserResult:
     ...
 ```
 
-**Naming:** `<duty>_executor.py` — e.g., `data_prepare_executor.py`, `training_executor.py`
+**Naming:** `<duty>_executor.py` — lives in `program/processor/executors/`
 
 ---
 
-### 5. Config Models (`models/config_models.py`)
+### 4. Config Template Models (`models/config_templates/`)
 
-Top-level model validated on startup. Sub-models scoped to each executor's duty.
+One file per YAML config template. Each file owns its top-level model and sub-models.
 
 ```python
+# models/config_templates/server_config.py
 from pydantic import BaseModel
-from typing import Optional
+from typing import Literal, Optional
 
-class FirstTaskConfig(BaseModel):
-  source: str
-  timeout: int = 30
+class AuthConfig(BaseModel):
+  type: Literal["none", "bearer", "basic"] = "none"
 
-class SecondTaskConfig(BaseModel):
-  output_dir: str
+class ServerEntry(BaseModel):
+  id: str
+  url: str
+  api: str = "api/v1"
+  timeout: int
+  auth: Optional[AuthConfig] = None
 
-class AppConfig(BaseModel):
-  first_task: FirstTaskConfig
-  second_task: SecondTaskConfig
+class ServerConfig(BaseModel):
+  servers: list[ServerEntry]
 ```
 
 ---
 
-### 6. Result Models (`models/result_models.py`)
+### 5. Executor Result Models (`models/executors/`)
 
 Typed outputs passed between executors by Processor.
 
 ```python
+# models/executors/config_loader_models.py
 from pydantic import BaseModel
+from typing import Optional
+from models.config_templates.promql_config import PromqlConfig
+from models.config_templates.server_config import ServerConfig
+from models.config_templates.output_config import OutputConfig
+from models.config_templates.range_config import RangeConfig
 
-class FirstResult(BaseModel):
-  data: list
-  count: int
-
-class SecondResult(BaseModel):
-  output_path: str
-  success: bool
+class ConfigLoaderResult(BaseModel):
+  promql_config: PromqlConfig
+  output_config: OutputConfig
+  server_config: ServerConfig
+  range_config: Optional[RangeConfig] = None
 ```
 
 ---
 
-### 7. YAML Config Template (`config_templates/config.yaml`)
+### 6. YAML Config Templates (`config_templates/`)
 
-Mirror the pydantic model structure. Use `REQUEST` as placeholder for values the user must fill in.
+Mirror the pydantic model structure. Use `REQUEST` as placeholder for required values.
 
 ```yaml
-first_task:
-  source: REQUEST
-  timeout: 30
-
-second_task:
-  output_dir: REQUEST
+# server_config.yaml
+servers:
+  - id: REQUEST
+    url: REQUEST
+    timeout: 30
+    auth:
+      type: none
 ```
 
 ---

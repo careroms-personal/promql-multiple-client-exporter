@@ -1,0 +1,40 @@
+pipelines:
+  - id: "pipeline_1"
+    query_id: "query_1"
+    server_id: "server_1"
+    description: "Intance query pipeline"
+    type: "instance"
+    url: "http://localhost:9090"
+    api: "api/v1/query"
+    auth: {}
+    timeout: 30
+    expr: "up{job='prometheus'}"
+    export_labels: ["instance", "job"]
+    
+  - id: "pipeline_2"
+    query_id: "query_2"
+    server_id: "server_1"
+    range_id: "range_1"
+    description: "Range query pipeline"
+    type: "range"
+    url: "http://localhost:9090"
+    api: "api/v1/query_range"
+    auth: {}
+    timeout: 30
+    expr: "cpu_usage_seconds_total{job='node'}"
+    export_labels: ["instance", "job"]
+    range:
+      start: 1700000000
+      end: 1700003600
+      step: "15s"
+
+outputs:
+  - id: "output_1"
+    type: "csv"
+    file_path: "output.csv"
+    include_labels: true
+  
+  - id: "output_2"
+    type: "postgresql"
+    connection_string: "postgresql://user:password@localhost:5432/mydatabase"
+    table_name: "prometheus_data"
