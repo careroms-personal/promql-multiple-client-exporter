@@ -1,0 +1,199 @@
+pipelines:
+- id: test_pipeline_1_prometheus_up_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: prometheus_up
+  server_id: kind_prometheus
+  type: instant
+  url: http://localhost:9090
+  api: api/v1/query
+  auth:
+    type: none
+  timeout: 30
+  expr: up{job='prometheus'}
+  export_labels:
+  - instance
+  - job
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_cpu_usage_one_hour_backwards_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_cpu_usage
+  server_id: kind_prometheus
+  range_id: one_hour_backwards
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: cpu_usage_seconds_total{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1778845937
+    end: 1778849537
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_cpu_usage_2026-01-01_to_2026-01-02_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_cpu_usage
+  server_id: kind_prometheus
+  range_id: 2026-01-01_to_2026-01-02
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: cpu_usage_seconds_total{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1767225600
+    end: 1767312000
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_cpu_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_cpu_usage
+  server_id: kind_prometheus
+  range_id: ts_2026-01-01_to_2026-01-02
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: cpu_usage_seconds_total{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1767225600
+    end: 1767312000
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_memory_usage_one_hour_backwards_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_memory_usage
+  server_id: kind_prometheus
+  range_id: one_hour_backwards
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: memory_usage_bytes{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1778845937
+    end: 1778849537
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_memory_usage_2026-01-01_to_2026-01-02_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_memory_usage
+  server_id: kind_prometheus
+  range_id: 2026-01-01_to_2026-01-02
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: memory_usage_bytes{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1767225600
+    end: 1767312000
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data
+- id: test_pipeline_1_node_memory_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_memory_usage
+  server_id: kind_prometheus
+  range_id: ts_2026-01-01_to_2026-01-02
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  timeout: 30
+  expr: memory_usage_bytes{job='node_exporter'}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1767225600
+    end: 1767312000
+    step: 15s
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: output_{query_id}.csv
+    include_labels: true
+  - id: pg_store
+    type: postgresql
+    connection_string: postgresql://user:password@localhost:5432/mydatabase
+    table_name: prometheus_data

@@ -1,17 +1,26 @@
 from pydantic import BaseModel
-from typing import Optional, Union
+from typing import Optional
 
 class RangeBlock(BaseModel):
   start: int
   end: int
   step: str
 
-class PipelineEntry(BaseModel):
+class OutputExportEntry(BaseModel):
   id: str
+  type: str
+  file_path: Optional[str] = None
+  include_labels: Optional[bool] = None
+  connection_string: Optional[str] = None
+  table_name: Optional[str] = None
+
+class PipelineExportEntry(BaseModel):
+  id: str
+  pipeline_id: str
+  pipeline_description: str
   query_id: str
   server_id: str
   range_id: Optional[str] = None
-  description: str
   type: str
   url: str
   api: str
@@ -20,15 +29,7 @@ class PipelineEntry(BaseModel):
   expr: str
   export_labels: list[str]
   range: Optional[RangeBlock] = None
-
-class OutputEntry(BaseModel):
-  id: str
-  type: str
-  file_path: Optional[str] = None
-  include_labels: Optional[bool] = None
-  connection_string: Optional[str] = None
-  table_name: Optional[str] = None
+  outputs: list[OutputExportEntry]
 
 class PromqlQueryExportSample(BaseModel):
-  pipelines: list[PipelineEntry]
-  outputs: list[OutputEntry]
+  pipelines: list[PipelineExportEntry]

@@ -1,6 +1,6 @@
 # promql-multiple-client-exporter — Program Guide
 <!-- last human review: -->
-<!-- last ai update: 2026 May 15 -->
+<!-- last ai update: 2026 May 15 (ConfigExporterExecutor complete, PromqlCombineQuery updated) -->
 
 Architecture, executor chain, and data flow.
 See `AI-PYTHON-GUIDE.md` for conventions. See `AI-CONFIG-GUIDE.md` for config structure.
@@ -77,9 +77,10 @@ pipeline_config.yaml
     │       → cross-joins servers × queries × ranges × outputs per pipeline entry
     │       → returns list[PromqlCombineQuery]
     │
-    └── ConfigExporterExecutor(combine_queries, pipeline_config)   [WIP]
-            → builds PromqlQueryExportSample from combine queries
-            → writes export YAML
+    └── ConfigExporterExecutor(combine_queries, loader_result, pipeline_config)
+            → groups combine queries by pipeline_id
+            → embeds selected outputs per pipeline entry
+            → returns PromqlQueryExportSample
 ```
 
 ---
@@ -111,26 +112,31 @@ ConfigLoaderResult
   - `datetime` → `.timestamp()`
   - `relative` → `int(time()) - offset` (supports `s/m/h/d/w/M`)
   - `timestamp` → passthrough
-- Per `PipelineEntry`: selects matching queries / servers / ranges / outputs by ID reference
-- Cross-joins all combinations via `itertools.product`
+- Per `PipelineEntry`: selects matching queries / servers / ranges by ID reference
+- Cross-joins servers × queries via `itertools.product`
 - `instant` queries: `range_entry = None`
 - `range` queries: expands one `PromqlCombineQuery` per range entry; exits with `❌` if no ranges defined
 
 ```
 PromqlCombineQuery
+  ├── pipeline_id: str
+  ├── pipeline_description: str
   ├── server_entry: ServerEntry
   ├── query_entry: QueryEntry
-  ├── range_entry: Optional[PromqlRangeEntry]
-  └── output_entry: OutputEntry
+  └── range_entry: Optional[PromqlRangeEntry]
 ```
 
 ---
 
-### ConfigExporterExecutor  [WIP]
+### ConfigExporterExecutor
 **File:** `program/processor/executors/config_exporter_executor.py`
-**Input:** `list[PromqlCombineQuery]`, `PipelineConfig`
-**Output:** TBD
-**Duty:** Builds `PromqlQueryExportSample` from combine queries and writes export YAML.
+**Input:** `list[PromqlCombineQuery]`, `ConfigLoaderResult`, `PipelineConfig`
+**Output:** `PromqlQueryExportSample`
+**Duty:**
+- Groups combine queries by `pipeline_id`
+- Per pipeline: filters selected outputs by ID from `config_loader_result.output_config`
+- Builds one `PipelineExportEntry` per combine query with all selected outputs embedded as `list[OutputExportEntry]`
+- One query → multiple outputs simultaneously (no duplicate query execution per output)
 
 ---
 

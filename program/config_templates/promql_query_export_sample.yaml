@@ -1,8 +1,9 @@
 pipelines:
-  - id: "pipeline_1"
+  - id: "<generated_by_program>"
+    pipeline_id: "pipeline_1"
+    pipeline_description: "Instance query pipeline"
     query_id: "query_1"
     server_id: "server_1"
-    description: "Intance query pipeline"
     type: "instance"
     url: "http://localhost:9090"
     api: "api/v1/query"
@@ -10,12 +11,22 @@ pipelines:
     timeout: 30
     expr: "up{job='prometheus'}"
     export_labels: ["instance", "job"]
-    
-  - id: "pipeline_2"
+    outputs:
+      - id: "csv_output"
+        type: "csv"
+        file_path: "output.csv"
+        include_labels: true
+      - id: "pg_store"
+        type: "postgresql"
+        connection_string: "postgresql://user:password@localhost:5432/mydatabase"
+        table_name: "prometheus_data"
+
+  - id: "<generated_by_program>"
+    pipeline_id: "pipeline_2"
+    pipeline_description: "Range query pipeline"
     query_id: "query_2"
     server_id: "server_1"
     range_id: "range_1"
-    description: "Range query pipeline"
     type: "range"
     url: "http://localhost:9090"
     api: "api/v1/query_range"
@@ -27,14 +38,12 @@ pipelines:
       start: 1700000000
       end: 1700003600
       step: "15s"
-
-outputs:
-  - id: "output_1"
-    type: "csv"
-    file_path: "output.csv"
-    include_labels: true
-  
-  - id: "output_2"
-    type: "postgresql"
-    connection_string: "postgresql://user:password@localhost:5432/mydatabase"
-    table_name: "prometheus_data"
+    outputs:
+      - id: "csv_output"
+        type: "csv"
+        file_path: "output.csv"
+        include_labels: true
+      - id: "pg_store"
+        type: "postgresql"
+        connection_string: "postgresql://user:password@localhost:5432/mydatabase"
+        table_name: "prometheus_data"

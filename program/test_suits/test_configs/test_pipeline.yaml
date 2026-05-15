@@ -24,3 +24,4 @@ pipelines:
       - "kind_prometheus"
     outputs:
       - "csv_output"
+      - "pg_store"

@@ -1,6 +1,6 @@
 # promql-multiple-client-exporter — Config Guide
 <!-- last human review: -->
-<!-- last ai update: 2026 May 15 -->
+<!-- last ai update: 2026 May 15 (embedded outputs in export sample) -->
 
 Reference for all config template files. Each section shows the YAML structure and its matching Pydantic model.
 See `vibe-code-rule.yaml` for project rules. See `AI-PROGRAM-GUIDE.md` for architecture.
@@ -170,32 +170,60 @@ Flattened export format. Output structure written by `ConfigExporterExecutor`.
 
 ```yaml
 pipelines:
-  - id: "pipeline_1"
+  - id: "<generated_by_program>"
+    pipeline_id: "pipeline_1"
+    pipeline_description: "Instance query pipeline"
     query_id: "query_1"
     server_id: "server_1"
-    range_id: "range_1"     # optional
-    description: "..."
-    type: "instance"        # instance / range
+    type: "instance"          # instance / range
     url: "http://localhost:9090"
     api: "api/v1/query"
     auth: {}
     timeout: 30
     expr: "up{job='prometheus'}"
     export_labels: ["instance", "job"]
-    range:                  # optional, range queries only
+    outputs:                  # embedded — one query writes to all outputs simultaneously
+      - id: "csv_output"
+        type: "csv"
+        file_path: "output.csv"
+        include_labels: true
+      - id: "pg_store"
+        type: "postgresql"
+        connection_string: "postgresql://user:password@localhost:5432/mydatabase"
+        table_name: "prometheus_data"
+
+  - id: "<generated_by_program>"
+    pipeline_id: "pipeline_2"
+    pipeline_description: "Range query pipeline"
+    query_id: "query_2"
+    server_id: "server_1"
+    range_id: "range_1"       # optional, range queries only
+    type: "range"
+    url: "http://localhost:9090"
+    api: "api/v1/query_range"
+    auth: {}
+    timeout: 30
+    expr: "cpu_usage_seconds_total{job='node'}"
+    export_labels: ["instance", "job"]
+    range:                    # optional, range queries only
       start: 1700000000
       end: 1700003600
       step: "15s"
-
-outputs:
-  - id: "csv_output"
-    type: "csv"
-    file_path: "output.csv"
-    include_labels: true
+    outputs:
+      - id: "csv_output"
+        type: "csv"
+        file_path: "output.csv"
+        include_labels: true
+      - id: "pg_store"
+        type: "postgresql"
+        connection_string: "postgresql://user:password@localhost:5432/mydatabase"
+        table_name: "prometheus_data"
 ```
+
+**Design note:** `outputs` is embedded per pipeline entry — one query execution writes to all outputs simultaneously. No top-level `outputs` section.
 
 **Models:**
 - `RangeBlock` — `start: int`, `end: int`, `step: str`
-- `PipelineEntry` — all pipeline + query + server fields flattened; `range_id: Optional[str]`, `range: Optional[RangeBlock]`
-- `OutputEntry` — same shape as `output_config.OutputEntry`
-- `PromqlQueryExportSample` — `pipelines: list[PipelineEntry]`, `outputs: list[OutputEntry]`
+- `OutputExportEntry` — `id`, `type`, `file_path: Optional[str]`, `include_labels: Optional[bool]`, `connection_string: Optional[str]`, `table_name: Optional[str]`
+- `PipelineExportEntry` — all pipeline + query + server fields flattened; `range_id: Optional[str]`, `range: Optional[RangeBlock]`, `outputs: list[OutputExportEntry]`
+- `PromqlQueryExportSample` — `pipelines: list[PipelineExportEntry]`
