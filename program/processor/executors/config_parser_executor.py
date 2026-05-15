@@ -3,7 +3,9 @@ import sys
 from time import time
 
 from itertools import product
+from typing import Generator, List
 
+from models.config_templates.pipeline_config import PipelineConfig, PipelineEntry
 from models.executors.config_loader_models import ConfigLoaderResult
 from models.executors.config_parser_models import (
   PromqlRangeEntry, 
@@ -15,8 +17,9 @@ from models.executors.config_parser_models import (
 )
 
 class ConfigParserExecutor:
-  def __init__(self, config_loader_result: ConfigLoaderResult):
+  def __init__(self, config_loader_result: ConfigLoaderResult, pipeline_config: PipelineConfig):
     self.config_loader_result = config_loader_result
+    self.pipeline_config = pipeline_config
 
   def _parse_relative(self, value: str) -> int:
     if value == "now":
@@ -82,33 +85,47 @@ class ConfigParserExecutor:
       output_entry=output_entry
     )
   
-  def _build_combine_queries(self, range_config: PromqlRanges | None) -> list[PromqlCombineQuery]:
-    combine_queries = []
-    
-    for server, query, output in product(
-      self.config_loader_result.server_config.servers, 
-      self.config_loader_result.promql_config.queries,
-      self.config_loader_result.output_config.outputs):
+  def _build_combine_queries(self, pipeline_entry: PipelineEntry, range_config: PromqlRanges | None) -> Generator[PromqlCombineQuery, None, None]:
+    selected_queries = [
+      q for q in self.config_loader_result.promql_config.queries 
+      if q.id in pipeline_entry.promqls
+    ]
+
+    selected_servers = [
+      s for s in self.config_loader_result.server_config.servers 
+      if s.id in pipeline_entry.servers
+    ]
+
+    selected_outputs = [
+      o for o in self.config_loader_result.output_config.outputs 
+      if o.id in pipeline_entry.outputs
+    ]
+
+    selected_ranges = [
+      r for r in range_config.ranges 
+      if r.id in pipeline_entry.ranges
+    ] if range_config and pipeline_entry.ranges else []
+
+    for server, query, output in product(selected_servers, selected_queries, selected_outputs):
       if query.type == "instant":
-        combine_queries.append(
-          self._combine_promql_query(server, query, None, output)
-        )
+        yield self._combine_promql_query(server, query, None, output)
       elif query.type == "range":
-        if range_config is None:
-          print(f"❌ Query {query.id} is type range but no range config provided")
+        if not selected_ranges:
+          print(f"❌ Query {query.id} is a range query but no ranges are defined in the pipeline")
           sys.exit(1)
 
-        for range_ in range_config.ranges:
-          combine_queries.append(
-            self._combine_promql_query(server, query, range_, output)
-          )
+        for range_entry in selected_ranges:
+          yield self._combine_promql_query(server, query, range_entry, output)
       else:
         print(f"❌ Unknown query type: {query.type}")
         sys.exit(1)
-
-    return combine_queries
+    
   
   def execute(self):
     range_config = self._parse_range_config() if self.config_loader_result.range_config else None
-
-    return self._build_combine_queries(range_config)
+    
+    return [
+      combine_query
+      for pipeline in self.pipeline_config.pipelines
+      for combine_query in self._build_combine_queries(pipeline, range_config)
+    ]

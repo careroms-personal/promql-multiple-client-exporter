@@ -40,7 +40,7 @@ class Processor:
     config_loader = ConfigLoaderExecutor(self.config)
     config_loader_result = config_loader.execute()
     
-    config_parser = ConfigParserExecutor(config_loader_result)
+    config_parser = ConfigParserExecutor(config_loader_result, self.config)
     config_parser_result = config_parser.execute()
 
     print("config_parser_result:", config_parser_result)

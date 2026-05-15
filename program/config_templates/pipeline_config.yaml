@@ -1,3 +1,7 @@
+yaml_export_config:
+  output_file_name: "pipeline_config_output.yaml"
+  export_version: "1.0"
+
 config_files:
   promql: "config_templates/promql_config.yaml"
   range: "config_templates/range_config.yaml"

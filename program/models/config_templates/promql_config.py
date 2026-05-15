@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, List
 
 class QueryEntry(BaseModel):
   id: str
   query: str
   type: Literal["instant", "range"]
-  export_labels: list[str]
+  export_labels: List[str]
 
 class PromqlConfig(BaseModel):
-  queries: list[QueryEntry]
+  queries: List[QueryEntry]

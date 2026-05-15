@@ -6,6 +6,8 @@ installDependency: "pyproject.toml"
 readFirst:
   - .ai/AI-PRINCIPLE-GUIDE.md
   - .ai/AI-PYTHON-GUIDE.md
+  - .ai/AI-CONFIG-GUIDE.md
+  - .ai/AI-PROGRAM-GUIDE.md
 
 projectPatternRules:
   # Processor

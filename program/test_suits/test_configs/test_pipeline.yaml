@@ -1,3 +1,7 @@
+yaml_export_config:
+  output_file_name: "test_pipeline_config_output.yaml"
+  export_version: "1.0"
+
 config_files:
   promql: "test_promql.yaml"  
   range: "test_range.yaml"
@@ -13,9 +17,9 @@ pipelines:
       - "node_cpu_usage"
       - "node_memory_usage"
     ranges:
-      - "range_with_datetime"
-      - "range_with_timestamps"
-      - "range_backwards"
+      - "one_hour_backwards"
+      - "2026-01-01_to_2026-01-02"
+      - "ts_2026-01-01_to_2026-01-02"
     servers:
       - "kind_prometheus"
     outputs:
