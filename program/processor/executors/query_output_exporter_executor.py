@@ -1,4 +1,5 @@
 from models.executors.query_runner_executor import QueryResult
+from .exporter_functions.to_json import to_json
 from .exporter_functions.to_csv import to_csv
 
 class QueryOutputExporterExecutor:
@@ -7,7 +8,8 @@ class QueryOutputExporterExecutor:
       self.pipeline_file_path = pipeline_file_path
     def _export_results(self):
       output_functions  = {
-        "csv": to_csv
+        "csv": to_csv,
+        "json": to_json,
       }
 
       for query_result in self.query_results:
@@ -19,7 +21,7 @@ class QueryOutputExporterExecutor:
           fn = output_functions.get(output.type)
 
           if fn:
-            fn(query_results=query_result, output=output, pipeline_file_path=self.pipeline_file_path)
+            fn(query_result=query_result, output=output, pipeline_file_path=self.pipeline_file_path)
 
     def execute(self):
       self._export_results()

@@ -22,3 +22,4 @@ pipelines:
       - "kind_prometheus"
     outputs:
       - "csv_output"
+      - "json_output"

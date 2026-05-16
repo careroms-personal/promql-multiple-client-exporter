@@ -5,9 +5,13 @@ servers:
     timeout: 30
     auth:                # optional block
       type: none         # none / bearer / basic
+    headers: {}          # add headers support
+    
 
   - id: sandbox_prometheus_2
     url: "http://localhost:9091"
+    api: "api/v1"
     timeout: 30
     auth:                # optional block
       type: none         # none / bearer / basic
+    headers: {}

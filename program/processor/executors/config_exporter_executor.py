@@ -59,6 +59,7 @@ class ConfigExporterExecutor:
         url=combine_query.server_entry.url,
         api=api,
         auth=combine_query.server_entry.auth.model_dump() if combine_query.server_entry.auth else {},
+        headers=combine_query.server_entry.headers,
         timeout=combine_query.server_entry.timeout,
         expr=combine_query.query_entry.query,
         export_labels=combine_query.query_entry.export_labels,

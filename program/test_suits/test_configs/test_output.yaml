@@ -1,15 +1,10 @@
 outputs:
   - id: "csv_output"
     type: "csv"
-    file_path: "csv_outputs"
+    file_path: "test_outputs/csv_outputs"
     include_labels: true
 
   - id: "json_output"
     type: "json"
-    file_path: "json_outputs"
+    file_path: "test_outputs/json_outputs"
     include_labels: true
-
-  - id: "pg_store"
-    type: "postgresql"
-    connection_string: "postgresql://user:password@localhost:5432/mydatabase"
-    table_name: "prometheus_data"

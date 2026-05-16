@@ -9,6 +9,7 @@ pipelines:
   api: api/v1/query
   auth:
     type: none
+  headers: {}
   timeout: 30
   expr: up{job="kube-prometheus-stack-prometheus"}
   export_labels:
@@ -18,6 +19,10 @@ pipelines:
   - id: csv_output
     type: csv
     file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
     include_labels: true
 - id: test_pipeline_1_node_cpu_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
@@ -30,19 +35,24 @@ pipelines:
   api: api/v1/query_range
   auth:
     type: none
+  headers: {}
   timeout: 30
   expr: rate(node_cpu_seconds_total{job="node-exporter"}[1m])
   export_labels:
   - instance
   - job
   range:
-    start: 1778903403
-    end: 1778907003
+    start: 1778925356
+    end: 1778928956
     step: 1m
   outputs:
   - id: csv_output
     type: csv
     file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
     include_labels: true
 - id: test_pipeline_1_node_memory_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
@@ -55,17 +65,22 @@ pipelines:
   api: api/v1/query_range
   auth:
     type: none
+  headers: {}
   timeout: 30
   expr: node_memory_Active_bytes{job="node-exporter"}
   export_labels:
   - instance
   - job
   range:
-    start: 1778903403
-    end: 1778907003
+    start: 1778925356
+    end: 1778928956
     step: 1m
   outputs:
   - id: csv_output
     type: csv
     file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
     include_labels: true

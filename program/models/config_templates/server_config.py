@@ -10,6 +10,7 @@ class ServerEntry(BaseModel):
   api: str = "api/v1"
   timeout: int
   auth: Optional[AuthConfig] = None
+  headers: dict = {}
 
 class ServerConfig(BaseModel):
   servers: list[ServerEntry]

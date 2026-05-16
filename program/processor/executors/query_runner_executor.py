@@ -16,6 +16,7 @@ class QueryRunnerExecutor:
         case "instant":
           response = self.client.get(
             url=f"{pipeline_entry.url}/{pipeline_entry.api}",
+            headers=pipeline_entry.headers,
             params={
               "query": pipeline_entry.expr,
             },
@@ -25,6 +26,7 @@ class QueryRunnerExecutor:
         case "range":
           response = self.client.get(
             url=f"{pipeline_entry.url}/{pipeline_entry.api}",
+            headers=pipeline_entry.headers,
             params={
               "query": pipeline_entry.expr,
               "start": pipeline_entry.range.start,

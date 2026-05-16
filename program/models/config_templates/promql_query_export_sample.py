@@ -25,6 +25,7 @@ class PipelineExportEntry(BaseModel):
   url: str
   api: str
   auth: dict
+  headers: dict
   timeout: int
   expr: str
   export_labels: list[str]
