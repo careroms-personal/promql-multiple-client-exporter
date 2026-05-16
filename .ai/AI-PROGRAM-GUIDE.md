@@ -164,7 +164,7 @@ PromqlCombineQuery
 
 ```
 QueryResult
-  ├── pipeline_entry: PipelineExportEntry
+  ├── pipeline_config_id: str
   └── rows: list[QueryResultRow]
         ├── labels: dict
         └── values: list[tuple[float, str]]

@@ -10,14 +10,14 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: up{job='kube-prometheus-stack-prometheus'}
+  expr: up{job="kube-prometheus-stack-prometheus"}
   export_labels:
   - instance
   - job
   outputs:
   - id: csv_output
     type: csv
-    file_path: output_{query_id}.csv
+    file_path: csv_outputs
     include_labels: true
 - id: test_pipeline_1_node_cpu_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
@@ -31,68 +31,18 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: node_cpu_seconds_total{job='node-exporter'}
+  expr: rate(node_cpu_seconds_total{job="node-exporter"}[1m])
   export_labels:
   - instance
   - job
   range:
-    start: 1778893725
-    end: 1778897325
-    step: 15s
+    start: 1778903403
+    end: 1778907003
+    step: 1m
   outputs:
   - id: csv_output
     type: csv
-    file_path: output_{query_id}.csv
-    include_labels: true
-- id: test_pipeline_1_node_cpu_usage_2026-01-01_to_2026-01-02_kind_prometheus
-  pipeline_id: test_pipeline_1
-  pipeline_description: Pipeline for testing with test configs.
-  query_id: node_cpu_usage
-  server_id: kind_prometheus
-  range_id: 2026-01-01_to_2026-01-02
-  type: range
-  url: http://localhost:9090
-  api: api/v1/query_range
-  auth:
-    type: none
-  timeout: 30
-  expr: node_cpu_seconds_total{job='node-exporter'}
-  export_labels:
-  - instance
-  - job
-  range:
-    start: 1767225600
-    end: 1767312000
-    step: 15s
-  outputs:
-  - id: csv_output
-    type: csv
-    file_path: output_{query_id}.csv
-    include_labels: true
-- id: test_pipeline_1_node_cpu_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
-  pipeline_id: test_pipeline_1
-  pipeline_description: Pipeline for testing with test configs.
-  query_id: node_cpu_usage
-  server_id: kind_prometheus
-  range_id: ts_2026-01-01_to_2026-01-02
-  type: range
-  url: http://localhost:9090
-  api: api/v1/query_range
-  auth:
-    type: none
-  timeout: 30
-  expr: node_cpu_seconds_total{job='node-exporter'}
-  export_labels:
-  - instance
-  - job
-  range:
-    start: 1767225600
-    end: 1767312000
-    step: 15s
-  outputs:
-  - id: csv_output
-    type: csv
-    file_path: output_{query_id}.csv
+    file_path: csv_outputs
     include_labels: true
 - id: test_pipeline_1_node_memory_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
@@ -106,66 +56,16 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: node_memory_usage_bytes{job='node-exporter'}
+  expr: node_memory_Active_bytes{job="node-exporter"}
   export_labels:
   - instance
   - job
   range:
-    start: 1778893725
-    end: 1778897325
-    step: 15s
+    start: 1778903403
+    end: 1778907003
+    step: 1m
   outputs:
   - id: csv_output
     type: csv
-    file_path: output_{query_id}.csv
-    include_labels: true
-- id: test_pipeline_1_node_memory_usage_2026-01-01_to_2026-01-02_kind_prometheus
-  pipeline_id: test_pipeline_1
-  pipeline_description: Pipeline for testing with test configs.
-  query_id: node_memory_usage
-  server_id: kind_prometheus
-  range_id: 2026-01-01_to_2026-01-02
-  type: range
-  url: http://localhost:9090
-  api: api/v1/query_range
-  auth:
-    type: none
-  timeout: 30
-  expr: node_memory_usage_bytes{job='node-exporter'}
-  export_labels:
-  - instance
-  - job
-  range:
-    start: 1767225600
-    end: 1767312000
-    step: 15s
-  outputs:
-  - id: csv_output
-    type: csv
-    file_path: output_{query_id}.csv
-    include_labels: true
-- id: test_pipeline_1_node_memory_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
-  pipeline_id: test_pipeline_1
-  pipeline_description: Pipeline for testing with test configs.
-  query_id: node_memory_usage
-  server_id: kind_prometheus
-  range_id: ts_2026-01-01_to_2026-01-02
-  type: range
-  url: http://localhost:9090
-  api: api/v1/query_range
-  auth:
-    type: none
-  timeout: 30
-  expr: node_memory_usage_bytes{job='node-exporter'}
-  export_labels:
-  - instance
-  - job
-  range:
-    start: 1767225600
-    end: 1767312000
-    step: 15s
-  outputs:
-  - id: csv_output
-    type: csv
-    file_path: output_{query_id}.csv
+    file_path: csv_outputs
     include_labels: true

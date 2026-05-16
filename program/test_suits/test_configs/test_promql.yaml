@@ -1,20 +1,20 @@
 queries:
   - id: "prometheus_up"
-    query: "up{job='kube-prometheus-stack-prometheus'}"
+    query: 'up{job="kube-prometheus-stack-prometheus"}'
     type: instant
     export_labels: 
       - "instance"
       - "job"
 
   - id: "node_cpu_usage"
-    query: "node_cpu_seconds_total{job='node-exporter'}"
+    query: 'rate(node_cpu_seconds_total{job="node-exporter"}[1m])'
     type: range
     export_labels: 
       - "instance"
       - "job"
       
   - id: "node_memory_usage"
-    query: "node_memory_usage_bytes{job='node-exporter'}"
+    query: 'node_memory_Active_bytes{job="node-exporter"}'
     type: range
     export_labels: 
       - "instance"

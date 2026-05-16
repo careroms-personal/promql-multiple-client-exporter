@@ -18,8 +18,6 @@ pipelines:
       - "node_memory_usage"
     ranges:
       - "one_hour_backwards"
-      - "2026-01-01_to_2026-01-02"
-      - "ts_2026-01-01_to_2026-01-02"
     servers:
       - "kind_prometheus"
     outputs:

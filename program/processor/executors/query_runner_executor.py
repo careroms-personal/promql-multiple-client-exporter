@@ -1,6 +1,7 @@
 import sys
-
 import requests
+
+from typing import Generator
 
 from models.config_templates.promql_query_export_sample import PromqlQueryExportSample, OutputExportEntry, PipelineExportEntry
 from models.executors.query_runner_executor import QueryResult, QueryResultRow
@@ -10,7 +11,7 @@ class QueryRunnerExecutor:
       self.pipeline_export_entries = pipeline_export_entries
       self.client = requests.Session()
 
-    def _executor_query(self, pipeline_entry: PipelineExportEntry) -> QueryResult:
+    def _executor_query(self, pipeline_entry: PipelineExportEntry) -> Generator[QueryResult, None, None]:
       match pipeline_entry.type:
         case "instant":
           response = self.client.get(
@@ -53,11 +54,10 @@ class QueryRunnerExecutor:
             else [result["value"]]
         ))
 
-      print(rows)
-      
-      return QueryResult(
-        pipeline_entry=pipeline_entry,
+      yield QueryResult(
+        pipeline_config_id=pipeline_entry.id,
         rows=rows,
+        outputs=pipeline_entry.outputs,
       )
 
     def _filter_labels(self, metric: dict, export_labels: list[str]) -> dict:
@@ -65,10 +65,9 @@ class QueryRunnerExecutor:
         k: v for k, v in metric.items() if k in export_labels
       }
 
-    def _export_output(self, export_entry: OutputExportEntry, result: QueryResult):
-      pass
+    def execute(self) -> list[QueryResult]:
+      results = []
 
-    def execute(self):
       for pipeline_entry in self.pipeline_export_entries.pipelines:
-        self._executor_query(pipeline_entry)
-        
+        results.extend(self._executor_query(pipeline_entry))
+      return results

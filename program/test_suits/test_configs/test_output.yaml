@@ -1,12 +1,12 @@
 outputs:
   - id: "csv_output"
     type: "csv"
-    file_path: "output_{query_id}.csv"
+    file_path: "csv_outputs"
     include_labels: true
 
   - id: "json_output"
     type: "json"
-    file_path: "output_{query_id}.json"
+    file_path: "json_outputs"
     include_labels: true
 
   - id: "pg_store"

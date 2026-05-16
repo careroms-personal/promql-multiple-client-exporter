@@ -9,6 +9,7 @@ from .executors.config_loader_executor import ConfigLoaderExecutor
 from .executors.config_parser_executor import ConfigParserExecutor
 from .executors.config_exporter_executor import ConfigExporterExecutor
 from .executors.query_runner_executor import QueryRunnerExecutor
+from .executors.query_output_exporter_executor import QueryOutputExporterExecutor
 
 class Processor:
   def __init__(self, config_path: str):
@@ -49,4 +50,7 @@ class Processor:
     config_export_data = config_exporter.execute()
 
     query_runner = QueryRunnerExecutor(config_export_data)
-    query_runner.execute()
+    query_result = query_runner.execute()
+
+    query_result_exporter = QueryOutputExporterExecutor(query_results=query_result, pipeline_file_path=self.config.pipeline_file_path)
+    query_result_exporter.execute()

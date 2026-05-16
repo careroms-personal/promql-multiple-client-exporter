@@ -1,18 +1,18 @@
 ranges:
   - id: one_hour_backwards
     type: relative
-    step: 15s
+    step: 1m
     start: now-1h
     end: now
 
   - id: 2026-01-01_to_2026-01-02
     type: datetime
-    step: 15s
+    step: 1m
     start: 2026-01-01T00:00:00Z
     end: 2026-01-02T00:00:00Z
   
   - id: ts_2026-01-01_to_2026-01-02
     type: timestamp
-    step: 15s
+    step: 1m
     start: 1767225600  # Unix timestamp for 2026-01-01T00:00:00Z
     end: 1767312000    # Unix timestamp for 2026-01-02T00:00:00Z
