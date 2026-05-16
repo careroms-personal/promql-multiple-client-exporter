@@ -1,6 +1,6 @@
 # promql-multiple-client-exporter — Program Guide
 <!-- last human review: -->
-<!-- last ai update: 2026 May 15 (ConfigExporterExecutor complete, PromqlCombineQuery updated) -->
+<!-- last ai update: 2026 May 15 (QueryRunnerExecutor added) -->
 
 Architecture, executor chain, and data flow.
 See `AI-PYTHON-GUIDE.md` for conventions. See `AI-CONFIG-GUIDE.md` for config structure.
@@ -28,16 +28,18 @@ promql-multiple-client-exporter/
     │   │   ├── promql_config.py            # PromqlConfig, QueryEntry
     │   │   ├── range_config.py             # RangeConfig, RangeEntry
     │   │   ├── output_config.py            # OutputConfig, OutputEntry
-    │   │   └── promql_query_export_sample.py  # PromqlQueryExportSample, PipelineEntry, OutputEntry, RangeBlock
+    │   │   └── promql_query_export_sample.py  # PromqlQueryExportSample, PipelineExportEntry, OutputExportEntry, RangeBlock
     │   └── executors/
     │       ├── config_loader_models.py     # ConfigLoaderResult
-    │       └── config_parser_models.py     # PromqlCombineQuery, PromqlRanges, PromqlRangeEntry
+    │       ├── config_parser_models.py     # PromqlCombineQuery, PromqlRanges, PromqlRangeEntry
+    │       └── query_runner_executor.py    # QueryResult, QueryResultRow
     ├── processor/
     │   ├── processor.py
     │   └── executors/
     │       ├── config_loader_executor.py
     │       ├── config_parser_executor.py
-    │       └── config_exporter_executor.py
+    │       ├── config_exporter_executor.py
+    │       └── query_runner_executor.py
     ├── global_config.py                    # reserved — do not add models here
     ├── config_templates/
     │   ├── pipeline_config.yaml
@@ -77,10 +79,17 @@ pipeline_config.yaml
     │       → cross-joins servers × queries × ranges × outputs per pipeline entry
     │       → returns list[PromqlCombineQuery]
     │
-    └── ConfigExporterExecutor(combine_queries, loader_result, pipeline_config)
-            → groups combine queries by pipeline_id
-            → embeds selected outputs per pipeline entry
-            → returns PromqlQueryExportSample
+    ├── ConfigExporterExecutor(combine_queries, loader_result, pipeline_config)
+    │       → groups combine queries by pipeline_id
+    │       → embeds selected outputs per pipeline entry
+    │       → writes export YAML to pipeline_file_path/output_file_name
+    │       → returns PromqlQueryExportSample
+    │
+    └── QueryRunnerExecutor(export_sample)
+            → iterates over PromqlQueryExportSample.pipelines
+            → executes GET {url}/{api} per pipeline entry
+            → filters response labels by export_labels
+            → returns list[QueryResult]  [output WIP]
 ```
 
 ---
@@ -140,6 +149,29 @@ PromqlCombineQuery
 
 ---
 
+### QueryRunnerExecutor
+**File:** `program/processor/executors/query_runner_executor.py`
+**Input:** `PromqlQueryExportSample`
+**Output:** `list[QueryResult]` (output handling WIP)
+**Duty:**
+- Iterates over `PromqlQueryExportSample.pipelines`
+- Executes HTTP GET to `{url}/{api}` with query params per entry type:
+  - `instant` → `?query=<expr>`
+  - `range` → `?query=<expr>&start=<ts>&end=<ts>&step=<step>`
+- Validates Prometheus `status == "success"`; exits with `❌` on error
+- Filters response metric labels by `export_labels`
+- Returns `QueryResult` with `pipeline_entry` + `rows: list[QueryResultRow]`
+
+```
+QueryResult
+  ├── pipeline_entry: PipelineExportEntry
+  └── rows: list[QueryResultRow]
+        ├── labels: dict
+        └── values: list[tuple[float, str]]
+```
+
+---
+
 ## How to Look Things Up
 
 | What you need | Where to look |
@@ -149,6 +181,8 @@ PromqlCombineQuery
 | Config loader executor | `program/processor/executors/config_loader_executor.py` |
 | Config parser executor | `program/processor/executors/config_parser_executor.py` |
 | Config exporter executor | `program/processor/executors/config_exporter_executor.py` |
+| Query runner executor | `program/processor/executors/query_runner_executor.py` |
+| Query result models | `program/models/executors/query_runner_executor.py` |
 | Pipeline config model | `program/models/config_templates/pipeline_config.py` |
 | Server config model | `program/models/config_templates/server_config.py` |
 | PromQL config model | `program/models/config_templates/promql_config.py` |

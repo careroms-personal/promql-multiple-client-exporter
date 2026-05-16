@@ -10,7 +10,7 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: up{job='prometheus'}
+  expr: up{job='kube-prometheus-stack-prometheus'}
   export_labels:
   - instance
   - job
@@ -19,10 +19,6 @@ pipelines:
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_cpu_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -35,23 +31,19 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: cpu_usage_seconds_total{job='node_exporter'}
+  expr: node_cpu_seconds_total{job='node-exporter'}
   export_labels:
   - instance
   - job
   range:
-    start: 1778845937
-    end: 1778849537
+    start: 1778893725
+    end: 1778897325
     step: 15s
   outputs:
   - id: csv_output
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_cpu_usage_2026-01-01_to_2026-01-02_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -64,7 +56,7 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: cpu_usage_seconds_total{job='node_exporter'}
+  expr: node_cpu_seconds_total{job='node-exporter'}
   export_labels:
   - instance
   - job
@@ -77,10 +69,6 @@ pipelines:
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_cpu_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -93,7 +81,7 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: cpu_usage_seconds_total{job='node_exporter'}
+  expr: node_cpu_seconds_total{job='node-exporter'}
   export_labels:
   - instance
   - job
@@ -106,10 +94,6 @@ pipelines:
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_memory_usage_one_hour_backwards_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -122,23 +106,19 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: memory_usage_bytes{job='node_exporter'}
+  expr: node_memory_usage_bytes{job='node-exporter'}
   export_labels:
   - instance
   - job
   range:
-    start: 1778845937
-    end: 1778849537
+    start: 1778893725
+    end: 1778897325
     step: 15s
   outputs:
   - id: csv_output
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_memory_usage_2026-01-01_to_2026-01-02_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -151,7 +131,7 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: memory_usage_bytes{job='node_exporter'}
+  expr: node_memory_usage_bytes{job='node-exporter'}
   export_labels:
   - instance
   - job
@@ -164,10 +144,6 @@ pipelines:
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data
 - id: test_pipeline_1_node_memory_usage_ts_2026-01-01_to_2026-01-02_kind_prometheus
   pipeline_id: test_pipeline_1
   pipeline_description: Pipeline for testing with test configs.
@@ -180,7 +156,7 @@ pipelines:
   auth:
     type: none
   timeout: 30
-  expr: memory_usage_bytes{job='node_exporter'}
+  expr: node_memory_usage_bytes{job='node-exporter'}
   export_labels:
   - instance
   - job
@@ -193,7 +169,3 @@ pipelines:
     type: csv
     file_path: output_{query_id}.csv
     include_labels: true
-  - id: pg_store
-    type: postgresql
-    connection_string: postgresql://user:password@localhost:5432/mydatabase
-    table_name: prometheus_data

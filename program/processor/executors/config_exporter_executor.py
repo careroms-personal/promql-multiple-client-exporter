@@ -1,3 +1,7 @@
+import sys
+import yaml
+
+from pathlib import Path
 from typing import List, Generator
 
 from models.executors.config_loader_models import ConfigLoaderResult
@@ -62,6 +66,22 @@ class ConfigExporterExecutor:
         outputs=output_entries
       )
 
+  def _write_yaml(self, export_data: PromqlQueryExportSample):
+    if not self.pipeline_config.yaml_export_config:
+      print(f"❌ yaml_export_config is not defined in pipeline config")
+      sys.exit(1)
+
+    output_path = Path(self.pipeline_config.pipeline_file_path) / self.pipeline_config.yaml_export_config.output_file_name
+
+    with open(output_path, 'w') as f:
+      yaml.dump(
+        export_data.model_dump(exclude_none=True),
+        f,
+        default_flow_style=False,
+        allow_unicode=True,
+        sort_keys=False,
+      )
+
   def execute(self) -> PromqlQueryExportSample:
     all_outputs = self.config_loader_result.output_config.outputs
     all_entries = []
@@ -71,4 +91,7 @@ class ConfigExporterExecutor:
       selected_outputs = [o for o in all_outputs if o.id in pipeline_entry.outputs]
       all_entries.extend(self._build_pipeline_query_export(pipeline_queries, selected_outputs))
 
-    return PromqlQueryExportSample(pipelines=all_entries)
+    export_data = PromqlQueryExportSample(pipelines=all_entries)
+    self._write_yaml(export_data)
+    
+    return export_data
