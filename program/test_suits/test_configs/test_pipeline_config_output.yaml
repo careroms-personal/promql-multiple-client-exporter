@@ -1,0 +1,86 @@
+pipelines:
+- id: test_pipeline_1_prometheus_up_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: prometheus_up
+  server_id: kind_prometheus
+  type: instant
+  url: http://localhost:9090
+  api: api/v1/query
+  auth:
+    type: none
+  headers: {}
+  timeout: 30
+  expr: up{job="kube-prometheus-stack-prometheus"}
+  export_labels:
+  - instance
+  - job
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
+    include_labels: true
+- id: test_pipeline_1_node_cpu_usage_one_hour_backwards_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_cpu_usage
+  server_id: kind_prometheus
+  range_id: one_hour_backwards
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  headers: {}
+  timeout: 30
+  expr: rate(node_cpu_seconds_total{job="node-exporter"}[1m])
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1778925356
+    end: 1778928956
+    step: 1m
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
+    include_labels: true
+- id: test_pipeline_1_node_memory_usage_one_hour_backwards_kind_prometheus
+  pipeline_id: test_pipeline_1
+  pipeline_description: Pipeline for testing with test configs.
+  query_id: node_memory_usage
+  server_id: kind_prometheus
+  range_id: one_hour_backwards
+  type: range
+  url: http://localhost:9090
+  api: api/v1/query_range
+  auth:
+    type: none
+  headers: {}
+  timeout: 30
+  expr: node_memory_Active_bytes{job="node-exporter"}
+  export_labels:
+  - instance
+  - job
+  range:
+    start: 1778925356
+    end: 1778928956
+    step: 1m
+  outputs:
+  - id: csv_output
+    type: csv
+    file_path: csv_outputs
+    include_labels: true
+  - id: json_output
+    type: json
+    file_path: json_outputs
+    include_labels: true

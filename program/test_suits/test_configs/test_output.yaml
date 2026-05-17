@@ -1,5 +1,10 @@
 outputs:
   - id: "csv_output"
     type: "csv"
-    file_path: "output_{query_id}.csv"
+    file_path: "test_outputs/csv_outputs"
+    include_labels: true
+
+  - id: "json_output"
+    type: "json"
+    file_path: "test_outputs/json_outputs"
     include_labels: true

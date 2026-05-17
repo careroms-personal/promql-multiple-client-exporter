@@ -8,8 +8,9 @@ class ServerEntry(BaseModel):
   id: str
   url: str
   api: str = "api/v1"
-  timeout: str
+  timeout: int
   auth: Optional[AuthConfig] = None
+  headers: dict = {}
 
 class ServerConfig(BaseModel):
   servers: list[ServerEntry]

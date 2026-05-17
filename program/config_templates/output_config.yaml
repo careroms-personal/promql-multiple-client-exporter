@@ -8,8 +8,3 @@ outputs:
     type: "json"
     file_path: "output_{query_id}.json"
     include_labels: true
-
-  - id: "pg_store"
-    type: "postgresql"
-    connection_string: "postgresql://user:password@localhost:5432/mydatabase"
-    table_name: "prometheus_data"
